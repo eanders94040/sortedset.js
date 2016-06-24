@@ -15,13 +15,19 @@
   // Constructor for the SortedSet class
   function SortedSet(initial) {
     if (arguments.length > 0) {
-      // TODO: Handle the case when initial array is provided; if array has
-      // elements of duplicate value, reduce down to one instance and sort the
-      // elements in ascending order.
       setArray = [];
+      for (var i = 0; i < initial.length; i++) {
+	this.add(initial[i]);
+      }
+      setArray.sort(sortNumber);
     } else {
       setArray = [];
     }
+  }
+
+  // helper method to get numbers to sort correctly, from http://stackoverflow.com/questions/1063007/how-to-sort-an-array-of-integers-correctly
+  function sortNumber(a, b) {
+      return a - b;
   }
 
   /* Accessor; returns element at index
@@ -73,52 +79,90 @@
   /* Returns true if a given element exists in the set
    */
   SortedSet.prototype.contains = function(element) {
-    // TODO: Implement contains method
+    return setArray.indexOf(element) != -1;
   };
 
   /* Gets elements between startIndex and endIndex. If endIndex is omitted, a
    * single element at startIndex is returned.
    */
   SortedSet.prototype.get = function(startIndex, endIndex) {
-    // TODO: Implement get method
+    if (typeof endIndex == 'undefined') {
+      return setArray[startIndex];
+    } else {
+      // add one to make endIndex inclusive, but don't add one if would go past end of array
+      if (setArray.length == endIndex) {
+	return setArray.slice(startIndex);
+      } else {
+	return setArray.slice(startIndex, endIndex + 1);
+      }
+    }
   };
 
   /* Gets all items between specified value range. If exclusive is set, values
    * at lower bound and upper bound are not included.
    */
   SortedSet.prototype.getBetween = function(lbound, ubound, exclusive) {
-    // TODO: Implement getBetween method
+    // adjust lbound and ubound depending on what exclusive is (this is so can have just one if check to detemine if-between)
+    // then, one-by-one, check if each element is between lbound and ubound
+    // returning new array
+    var result = [];
+    if (exclusive) {
+      // todo: check if lbound and ubound are already equal or one apart before doing this?
+      // todo: or doesn't matter b/c even if that happens, if check to determine if-between would never succeed
+      lbound++;
+      ubound--;
+    }
+    for (var i = 0; i < setArray.length; i++) {
+      if (setArray[i] >= lbound && setArray[i] <= ubound) {
+	result.push(setArray[i]);
+      }
+    }
+    return result;
   };
 
   /* Adds new element to the set if not already in set
    */
   SortedSet.prototype.add = function(element) {
-    // TODO: Implement add method
+    if (setArray.indexOf(element) == -1) {
+      setArray.push(element);
+      setArray.sort(sortNumber);
+    }
   };
 
   /* Removes element from set and returns the element
    */
   SortedSet.prototype.remove = function(element) {
-    // TODO: Implement remove method
+    // just use indexOf, and if element present, slice & concat
+    var elementIndex = setArray.indexOf(element);
+    if (elementIndex != -1) {
+      return this.removeAt(elementIndex);
+    }
   };
 
   /* Removes element at index location and returns the element
    */
   SortedSet.prototype.removeAt = function(index) {
-    // TODO: Implement removeAt method
+    // todo: check if index outside bounds?
+    var removed = setArray.splice(index, 1);  // removes 1 element from index 'index'
+    // splice returned an array, but we're guaranteed to have 1 integer
+    return removed[0];
   };
 
   /* Removes elements that are larger than lower bound and smaller than upper
    * bound and returns removed elements.
    */
   SortedSet.prototype.removeBetween = function(lbound, ubound, exclusive) {
-    // TODO: Implement removeBetween method
+    var bottom = this.getBetween(Number.MIN_SAFE_INTEGER, lbound, !exclusive);  // todo: may increment one from MIN_SAFE_INTEGER if exclusive is true
+    var middle = this.getBetween(lbound, ubound, exclusive);
+    var top = this.getBetween(ubound, Number.MAX_SAFE_INTEGER, !exclusive);  // todo: similar concern as above
+    setArray = bottom.concat(top);
+    return middle;
   };
 
   /* Removes all elements from the set
    */
   SortedSet.prototype.clear = function() {
-    // TODO: Implement clear method
+    setArray = [];
   };
 
   /* BONUS MARKS AWARDED IF IMPLEMENTED
